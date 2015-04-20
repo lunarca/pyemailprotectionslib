@@ -18,47 +18,59 @@ class SpfRecord(object):
         self.mechanisms = None
         self.all_string = None
 
+    def get_redirected_record(self):
+        redirect_domain = self.get_redirect_domain()
+        if redirect_domain is not None:
+            return get_spf_string_for_domain(redirect_domain)
+
+    def get_redirect_domain(self):
+        redirect_domain = None
+        for mechanism in self.mechanisms:
+            redirect_mechanism = re.match('redirect=(.*)', mechanism)
+            if redirect_mechanism is not None:
+                redirect_domain = redirect_mechanism.group(1)
+        return redirect_domain
+
     @staticmethod
     def from_spf_string(spf_string):
         spf_record = SpfRecord()
         spf_record.record = spf_string
-        spf_record.mechanisms = _extract_spf_mechanisms(spf_string)
-        # TODO: Add from_spf_string method
+        spf_record.mechanisms = _extract_mechanisms(spf_string)
+        spf_record.version = _extract_version(spf_string)
+        spf_record.all_string = _extract_all_mechanism(spf_record.mechanisms)
+        return spf_record
 
     @staticmethod
     def from_domain(domain):
-        return SpfRecord.from_spf_string(get_spf_record(domain))
+        return SpfRecord.from_spf_string(get_spf_string_for_domain(domain))
 
 
-def _get_redirect_mechanism_domain(spf_mechanisms):
-    redirect_domain = None
-    for mechanism in spf_mechanisms:
-        redirect_mechanism = re.match('redirect=(.*)', mechanism)
-        if redirect_mechanism is not None:
-            redirect_domain = redirect_mechanism.group(1)
-    return redirect_domain
+def _extract_version(spf_string):
+    version_pattern = "^v=(spf.)"
+    version_match = re.match(version_pattern, spf_string)
+    if version_match is not None:
+        return version_match.group(1)
+    else:
+        return None
 
 
-def _get_redirected_spf_mechanisms(redirect_domain):
-    spf_record = get_spf_record(redirect_domain)
-    return _extract_spf_mechanisms(spf_record)
+def _extract_all_mechanism(mechanisms):
+    all_mechanism = None
+    for mechanism in mechanisms:
+        if re.match(".all", mechanism):
+            all_mechanism = mechanism
+    return all_mechanism
 
 
 def _find_unique_mechanisms(initial_mechanisms, redirected_mechanisms):
     return [x for x in redirected_mechanisms if x not in initial_mechanisms]
 
 
-def _extract_spf_mechanisms(spf_string):
+def _extract_mechanisms(spf_string):
     spf_mechanism_pattern = ("(?:((?:\+|-|~)?(?:a|mx|ptr|include"
                              "|ip4|ip6|exists|redirect|exp|all)"
                              "(?:(?::|/)?(?:\S*))?) ?)")
     spf_mechanisms = re.findall(spf_mechanism_pattern, spf_string)
-
-    redirect_domain = _get_redirect_mechanism_domain(spf_mechanisms)
-
-    if redirect_domain is not None:
-        redirected_mechanisms = _get_redirected_spf_mechanisms(redirect_domain)
-        spf_mechanisms.extend(_find_unique_mechanisms(spf_mechanisms, redirected_mechanisms))
 
     return spf_mechanisms
 
@@ -69,7 +81,7 @@ def _match_spf_record(txt_record):
     return potential_spf_match
 
 
-def _find_spf_record_from_answers(txt_records):
+def _find_record_from_answers(txt_records):
     spf_record = None
     for record in txt_records:
         potential_match = _match_spf_record(record)
@@ -78,9 +90,9 @@ def _find_spf_record_from_answers(txt_records):
     return spf_record
 
 
-def get_spf_record(domain):
+def get_spf_string_for_domain(domain):
     try:
         txt_records = dns.resolver.query(domain, "TXT")
-        return _find_spf_record_from_answers(txt_records)
+        return _find_record_from_answers(txt_records)
     except dns.resolver.NoAnswer:
         return None
