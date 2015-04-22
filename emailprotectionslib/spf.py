@@ -33,16 +33,23 @@ class SpfRecord(object):
 
     @staticmethod
     def from_spf_string(spf_string):
-        spf_record = SpfRecord()
-        spf_record.record = spf_string
-        spf_record.mechanisms = _extract_mechanisms(spf_string)
-        spf_record.version = _extract_version(spf_string)
-        spf_record.all_string = _extract_all_mechanism(spf_record.mechanisms)
-        return spf_record
+        if spf_string is not None:
+            spf_record = SpfRecord()
+            spf_record.record = spf_string
+            spf_record.mechanisms = _extract_mechanisms(spf_string)
+            spf_record.version = _extract_version(spf_string)
+            spf_record.all_string = _extract_all_mechanism(spf_record.mechanisms)
+            return spf_record
+        else:
+            return None
 
     @staticmethod
     def from_domain(domain):
-        return SpfRecord.from_spf_string(get_spf_string_for_domain(domain))
+        spf_string = get_spf_string_for_domain(domain)
+        if spf_string is not None:
+            return SpfRecord.from_spf_string(spf_string)
+        else:
+            return None
 
 
 def _extract_version(spf_string):

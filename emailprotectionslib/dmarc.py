@@ -1,5 +1,6 @@
 import re
 import dns.resolver
+import logging
 
 
 class NoDmarcRecordException(Exception):
@@ -50,14 +51,21 @@ class DmarcRecord(object):
 
     @staticmethod
     def from_dmarc_string(dmarc_string):
-        dmarc_record = DmarcRecord()
-        dmarc_record.record = dmarc_string
-        dmarc_record.process_tags(dmarc_string)
-        return dmarc_record
+        if dmarc_string is not None:
+            dmarc_record = DmarcRecord()
+            dmarc_record.record = dmarc_string
+            dmarc_record.process_tags(dmarc_string)
+            return dmarc_record
+        else:
+            return None
 
     @staticmethod
     def from_domain(domain):
-        return DmarcRecord.from_dmarc_string(get_dmarc_string_for_domain(domain))
+        dmarc_string = get_dmarc_string_for_domain(domain)
+        if dmarc_string is not None:
+            return DmarcRecord.from_dmarc_string()
+        else:
+            return None
 
 
 def _extract_tags(dmarc_record):
@@ -85,4 +93,7 @@ def get_dmarc_string_for_domain(domain):
         txt_records = dns.resolver.query("_dmarc." + domain, "TXT")
         return _find_record_from_answers(txt_records)
     except dns.resolver.NoAnswer:
+        return None
+    except TypeError as error:
+        logging.exception(error)
         return None
