@@ -18,6 +18,12 @@ class SpfRecord(object):
         self.mechanisms = None
         self.all_string = None
 
+    def __str__(self):
+        return self.record
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
     def get_redirected_record(self):
         redirect_domain = self.get_redirect_domain()
         if redirect_domain is not None:
@@ -26,7 +32,7 @@ class SpfRecord(object):
     def get_redirect_domain(self):
         redirect_domain = None
         for mechanism in self.mechanisms:
-            redirect_mechanism = re.match('redirect=(.*)', mechanism)
+            redirect_mechanism = re.match('redirect:(.*)', mechanism)
             if redirect_mechanism is not None:
                 redirect_domain = redirect_mechanism.group(1)
         return redirect_domain
@@ -83,7 +89,7 @@ def _extract_mechanisms(spf_string):
 
 
 def _match_spf_record(txt_record):
-    spf_pattern = re.compile('^"(v=spf.*)"')
+    spf_pattern = re.compile('^"?(v=spf.*)"?')
     potential_spf_match = spf_pattern.match(str(txt_record))
     return potential_spf_match
 

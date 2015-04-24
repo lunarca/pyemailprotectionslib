@@ -25,6 +25,12 @@ class DmarcRecord(object):
         self.spf_alignment = None
         self.record = None
 
+    def __str__(self):
+        return self.record
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
     def _store_tag_data(self, tag_name, tag_value):
         if tag_name == "v":
             self.version = tag_value
@@ -74,7 +80,7 @@ def _extract_tags(dmarc_record):
 
 
 def _match_dmarc_record(txt_record):
-    dmarc_pattern = re.compile('^"(v=DMARC.*)"')
+    dmarc_pattern = re.compile('^"?(v=DMARC.*)"?')
     potential_dmarc_match = dmarc_pattern.match(str(txt_record))
     return potential_dmarc_match
 
