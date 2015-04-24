@@ -1,5 +1,5 @@
 # `pyemailprotectionslib`
-[![Build Status](https://travis-ci.org/lunarca/pyemailprotectionslib.svg?branch=master)](https://travis-ci.org/lunarca/pyemailprotectionslib)g
+[![Build Status](https://travis-ci.org/lunarca/pyemailprotectionslib.svg?branch=master)](https://travis-ci.org/lunarca/pyemailprotectionslib)
 
 This is a simple library designed to assist people with finding email protections.
 
