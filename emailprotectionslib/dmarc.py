@@ -69,7 +69,7 @@ class DmarcRecord(object):
     def from_domain(domain):
         dmarc_string = get_dmarc_string_for_domain(domain)
         if dmarc_string is not None:
-            return DmarcRecord.from_dmarc_string()
+            return DmarcRecord.from_dmarc_string(dmarc_string)
         else:
             return None
 

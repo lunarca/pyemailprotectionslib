@@ -42,3 +42,7 @@ def test_from_dmarc_record_pass():
     dmarc_record.policy = "quarantine"
     dmarc_record.record = dmarc_string
     assert dmarclib.DmarcRecord.from_dmarc_string(dmarc_string) == dmarc_record
+
+
+def test_from_domain_pass():
+    assert dmarclib.DmarcRecord.from_domain("google.com") is not None

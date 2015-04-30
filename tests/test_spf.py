@@ -58,3 +58,7 @@ def test_get_redirect_domain():
     spf_string = "v=spf1 redirect:_spf.google.com"
     spf_record = spflib.SpfRecord.from_spf_string(spf_string)
     assert spf_record.get_redirect_domain() == "_spf.google.com"
+
+
+def test_from_domain_pass():
+    assert spflib.SpfRecord.from_domain("google.com") is not None
