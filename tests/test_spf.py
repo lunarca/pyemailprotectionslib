@@ -55,9 +55,15 @@ def test_from_spf_string():
 
 
 def test_get_redirect_domain():
-    spf_string = "v=spf1 redirect:_spf.google.com"
+    spf_string = "v=spf1 redirect=_spf.google.com"
     spf_record = spflib.SpfRecord.from_spf_string(spf_string)
     assert spf_record.get_redirect_domain() == "_spf.google.com"
+
+
+def test_get_include_domains():
+    spf_string = "v=spf1 include:_spf.google.com include:nonexistentdomain.com"
+    spf_record = spflib.SpfRecord.from_spf_string(spf_string)
+    assert spf_record.get_include_domains() == ["_spf.google.com", "nonexistentdomain.com"]
 
 
 def test_from_domain_pass():

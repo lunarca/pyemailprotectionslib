@@ -80,7 +80,7 @@ def _extract_tags(dmarc_record):
 
 
 def _match_dmarc_record(txt_record):
-    dmarc_pattern = re.compile('^"?(v=DMARC.*)"?')
+    dmarc_pattern = re.compile('^"?(v=DMARC[^"]*)"?')
     potential_dmarc_match = dmarc_pattern.match(str(txt_record))
     return potential_dmarc_match
 

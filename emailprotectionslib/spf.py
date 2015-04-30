@@ -27,15 +27,33 @@ class SpfRecord(object):
     def get_redirected_record(self):
         redirect_domain = self.get_redirect_domain()
         if redirect_domain is not None:
-            return get_spf_string_for_domain(redirect_domain)
+            return SpfRecord.from_domain(redirect_domain)
 
     def get_redirect_domain(self):
         redirect_domain = None
         for mechanism in self.mechanisms:
-            redirect_mechanism = re.match('redirect:(.*)', mechanism)
+            redirect_mechanism = re.match('redirect=(.*)', mechanism)
             if redirect_mechanism is not None:
                 redirect_domain = redirect_mechanism.group(1)
         return redirect_domain
+
+    def get_include_domains(self):
+        include_domains = []
+        for mechanism in self.mechanisms:
+            include_mechanism = re.match('include:(.*)', mechanism)
+            if include_mechanism is not None:
+                include_domains.append(include_mechanism.group(1))
+        return include_domains
+
+    def get_include_records(self):
+        include_domains = self.get_include_domains()
+        include_records = {}
+        for domain in include_domains:
+            try:
+                include_records[domain] = SpfRecord.from_domain(domain)
+            except dns.resolver.NXDOMAIN:
+                include_records[domain] = None
+        return include_records
 
     @staticmethod
     def from_spf_string(spf_string):
@@ -82,14 +100,14 @@ def _find_unique_mechanisms(initial_mechanisms, redirected_mechanisms):
 def _extract_mechanisms(spf_string):
     spf_mechanism_pattern = ("(?:((?:\+|-|~)?(?:a|mx|ptr|include"
                              "|ip4|ip6|exists|redirect|exp|all)"
-                             "(?:(?::|/)?(?:\S*))?) ?)")
+                             "(?:(?::|=|/)?(?:\S*))?) ?)")
     spf_mechanisms = re.findall(spf_mechanism_pattern, spf_string)
 
     return spf_mechanisms
 
 
 def _match_spf_record(txt_record):
-    spf_pattern = re.compile('^"?(v=spf.*)"?')
+    spf_pattern = re.compile('^"?(v=spf[^"]*)"?')
     potential_spf_match = spf_pattern.match(str(txt_record))
     return potential_spf_match
 
