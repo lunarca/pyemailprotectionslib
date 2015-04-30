@@ -125,7 +125,7 @@ def get_spf_string_for_domain(domain):
     try:
         txt_records = dns.resolver.query(domain, "TXT")
         return _find_record_from_answers(txt_records)
-    except dns.resolver.NoAnswer:
-        return None
-    except dns.resolver.NXDOMAIN:
-        return None
+    except dns.resolver.NoAnswer as ex:
+        raise NoSpfRecordException(ex)
+    except dns.resolver.NXDOMAIN as ex:
+        raise NoSpfRecordException(ex)

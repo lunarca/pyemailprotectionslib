@@ -98,10 +98,10 @@ def get_dmarc_string_for_domain(domain):
     try:
         txt_records = dns.resolver.query("_dmarc." + domain, "TXT")
         return _find_record_from_answers(txt_records)
-    except dns.resolver.NoAnswer:
-        return None
-    except dns.resolver.NXDOMAIN:
-        return None
+    except dns.resolver.NoAnswer as ex:
+        raise NoDmarcRecordException(ex)
+    except dns.resolver.NXDOMAIN as ex:
+        raise NoDmarcRecordException(ex)
     except TypeError as error:
         logging.exception(error)
         return None
