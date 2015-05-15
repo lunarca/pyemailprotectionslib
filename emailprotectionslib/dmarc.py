@@ -3,15 +3,6 @@ import dns.resolver
 import logging
 
 
-class NoDmarcRecordException(Exception):
-
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
-
-
 class DmarcRecord(object):
 
     def __init__(self):
@@ -99,9 +90,9 @@ def get_dmarc_string_for_domain(domain):
         txt_records = dns.resolver.query("_dmarc." + domain, "TXT")
         return _find_record_from_answers(txt_records)
     except dns.resolver.NoAnswer as ex:
-        raise NoDmarcRecordException(ex)
+        return None
     except dns.resolver.NXDOMAIN as ex:
-        raise NoDmarcRecordException(ex)
+        return None
     except TypeError as error:
         logging.exception(error)
         return None

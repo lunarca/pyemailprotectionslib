@@ -2,14 +2,6 @@ import re
 import dns.resolver
 
 
-class NoSpfRecordException(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
-
-
 class SpfRecord(object):
 
     def __init__(self):
@@ -125,7 +117,7 @@ def get_spf_string_for_domain(domain):
     try:
         txt_records = dns.resolver.query(domain, "TXT")
         return _find_record_from_answers(txt_records)
-    except dns.resolver.NoAnswer as ex:
-        raise NoSpfRecordException(ex)
-    except dns.resolver.NXDOMAIN as ex:
-        raise NoSpfRecordException(ex)
+    except dns.resolver.NoAnswer:
+        return None
+    except dns.resolver.NXDOMAIN:
+        return None
