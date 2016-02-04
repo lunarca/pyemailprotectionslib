@@ -68,3 +68,15 @@ def test_get_include_domains():
 
 def test_from_domain_pass():
     assert spflib.SpfRecord.from_domain("google.com") is not None
+
+
+def test_is_all_mechanism_strong():
+    spf_string = "v=spf1 include:_spf.google.com mx ~all"
+    spf_record = spflib.SpfRecord.from_spf_string(spf_string)
+    assert spf_record._is_all_mechanism_strong() is True
+
+
+def test_is_all_mechanism_strong_fail():
+    spf_string = "v=spf1 include:_spf.google.com mx"
+    spf_record = spflib.SpfRecord.from_spf_string(spf_string)
+    assert spf_record._is_all_mechanism_strong() is False

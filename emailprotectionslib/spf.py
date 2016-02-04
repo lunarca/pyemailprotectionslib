@@ -47,6 +47,55 @@ class SpfRecord(object):
                 include_records[domain] = None
         return include_records
 
+    def _is_all_mechanism_strong(self):
+        strong_spf_all_string = True
+        if self.all_string is not None:
+            if not (self.all_string == "~all" or self.all_string == "-all"):
+                strong_spf_all_string = False
+        else:
+            strong_spf_all_string = False
+        return strong_spf_all_string
+
+    def _is_redirect_mechanism_strong(self):
+        redirect_domain = self.get_redirect_domain()
+
+        if redirect_domain is not None:
+            redirect_mechanism = SpfRecord.from_domain(redirect_domain)
+
+            if redirect_mechanism is not None:
+                return redirect_mechanism.is_record_strong()
+            else:
+                return False
+        else:
+            return False
+
+    def _are_include_mechanisms_strong(self):
+        include_domain_list = self.get_include_domains()
+
+        for include_domain in include_domain_list:
+            strong_all_string = SpfRecord.from_domain(include_domain).is_record_strong()
+
+            if strong_all_string:
+                return True
+
+        return False
+
+    def is_record_strong(self):
+        strong_spf_record = self._is_all_mechanism_strong()
+        if strong_spf_record is False:
+
+            redirect_strength = self._is_redirect_mechanism_strong()
+            include_strength = self._are_include_mechanisms_strong()
+
+            strong_spf_record = False
+
+            if redirect_strength is True:
+                strong_spf_record = True
+
+            if include_strength is True:
+                strong_spf_record = True
+        return strong_spf_record
+
     @staticmethod
     def from_spf_string(spf_string):
         if spf_string is not None:
