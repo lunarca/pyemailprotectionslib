@@ -46,6 +46,13 @@ class DmarcRecord(object):
         for tag in tags:
             self._store_tag_data(tag[TAG_NAME], tag[TAG_VALUE])
 
+    def is_record_strong(self):
+        record_strong = False
+        if self.policy is not None and (self.policy == "reject" or self.policy == "quarantine"):
+            record_strong = True
+
+        return record_strong
+
     @staticmethod
     def from_dmarc_string(dmarc_string):
         if dmarc_string is not None:
