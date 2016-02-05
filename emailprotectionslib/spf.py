@@ -1,6 +1,6 @@
 import re
-import dns.resolver
 import logging
+import Resolver
 
 
 class SpfRecord(object):
@@ -22,14 +22,11 @@ class SpfRecord(object):
         if self.recursion_depth >= 10:
             return None
         else:
-            try:
-                redirect_domain = self.get_redirect_domain()
-                if redirect_domain is not None:
-                    redirect_record = SpfRecord.from_domain(redirect_domain)
-                    redirect_record.recursion_depth = self.recursion_depth + 1
-                    return redirect_record
-            except RuntimeError as e:
-                logging.exception("Encountered stack overflow processing domain %(d)s" % {'d': redirect_domain})
+            redirect_domain = self.get_redirect_domain()
+            if redirect_domain is not None:
+                redirect_record = SpfRecord.from_domain(redirect_domain)
+                redirect_record.recursion_depth = self.recursion_depth + 1
+                return redirect_record
 
     def get_redirect_domain(self):
         redirect_domain = None
@@ -57,10 +54,9 @@ class SpfRecord(object):
                 try:
                     include_records[domain] = SpfRecord.from_domain(domain)
                     include_records[domain].recursion_depth = self.recursion_depth + 1
-                except dns.resolver.NXDOMAIN:
+                except IOError as e:
+                    logging.exception(e)
                     include_records[domain] = None
-                except RuntimeError as e:
-                    logging.exception("Encountered recursion overflow processing domain %(d)s" % {'d': domain})
             return include_records
 
     def _is_all_mechanism_strong(self):
@@ -168,7 +164,7 @@ def _match_spf_record(txt_record):
 def _find_record_from_answers(txt_records):
     spf_record = None
     for record in txt_records:
-        potential_match = _match_spf_record(record)
+        potential_match = _match_spf_record(record[2])
         if potential_match is not None:
             spf_record = potential_match.group(1)
     return spf_record
@@ -176,9 +172,8 @@ def _find_record_from_answers(txt_records):
 
 def get_spf_string_for_domain(domain):
     try:
-        txt_records = dns.resolver.query(domain, "TXT")
+        txt_records = Resolver.resolver().query(domain, query_type="TXT")
         return _find_record_from_answers(txt_records)
-    except dns.resolver.NoAnswer:
-        return None
-    except dns.resolver.NXDOMAIN:
+    except IOError as e:
+        logging.exception(e)
         return None

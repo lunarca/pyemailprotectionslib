@@ -1,6 +1,6 @@
 import re
-import dns.resolver
 import logging
+import Resolver
 
 
 class DmarcRecord(object):
@@ -86,7 +86,7 @@ def _match_dmarc_record(txt_record):
 def _find_record_from_answers(txt_records):
     dmarc_record = None
     for record in txt_records:
-        potential_match = _match_dmarc_record(record)
+        potential_match = _match_dmarc_record(record[2])
         if potential_match is not None:
             dmarc_record = potential_match.group(1)
     return dmarc_record
@@ -94,11 +94,10 @@ def _find_record_from_answers(txt_records):
 
 def get_dmarc_string_for_domain(domain):
     try:
-        txt_records = dns.resolver.query("_dmarc." + domain, "TXT")
+        txt_records = Resolver.resolver().query("_dmarc." + domain, query_type="TXT")
         return _find_record_from_answers(txt_records)
-    except dns.resolver.NoAnswer as ex:
-        return None
-    except dns.resolver.NXDOMAIN as ex:
+    except IOError as ex:
+        logging.exception(ex)
         return None
     except TypeError as error:
         logging.exception(error)

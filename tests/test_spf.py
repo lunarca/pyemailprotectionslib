@@ -3,7 +3,8 @@ import emailprotectionslib.spf as spflib
 
 def test_find_record_from_answers_valid():
     spf_string = "v=spf1 include:_spf.google.com ~all"
-    txt_records = [spf_string, "asdf", "not dmarc"]
+    txt_records = [("google.com", "txt", spf_string),
+                   ("google.com", "txt", "asdf"), ("google.com", "txt", "not dmarc")]
 
     assert spflib._find_record_from_answers(txt_records) == spf_string
 

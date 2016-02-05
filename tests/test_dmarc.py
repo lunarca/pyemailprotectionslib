@@ -4,7 +4,9 @@ import emailprotectionslib.dmarc as dmarclib
 def test_find_record_from_answers_valid():
     dmarc_string = ("v=DMARC1; p=quarantine; rua=mailto:"
                     "mailauth-reports@google.com")
-    txt_records = [dmarc_string, "asdf", "not dmarc"]
+    txt_records = [("google.com", "txt", dmarc_string),
+                   ("google.com", "txt", "asdf"),
+                   ("google.com", "txt", "not dmarc")]
 
     assert dmarclib._find_record_from_answers(txt_records) == dmarc_string
 
