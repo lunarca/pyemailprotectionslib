@@ -9,6 +9,7 @@ class SpfRecord(object):
         self.record = None
         self.mechanisms = None
         self.all_string = None
+        self.recursion_depth = 0
 
     def __str__(self):
         return self.record
@@ -17,9 +18,14 @@ class SpfRecord(object):
         return self.__dict__ == other.__dict__
 
     def get_redirected_record(self):
-        redirect_domain = self.get_redirect_domain()
-        if redirect_domain is not None:
-            return SpfRecord.from_domain(redirect_domain)
+        if self.recursion_depth >= 10:
+            return None
+        else:
+            redirect_domain = self.get_redirect_domain()
+            if redirect_domain is not None:
+                redirect_record = SpfRecord.from_domain(redirect_domain)
+                redirect_record.recursion_depth = self.recursion_depth + 1
+                return redirect_record
 
     def get_redirect_domain(self):
         redirect_domain = None
@@ -38,14 +44,18 @@ class SpfRecord(object):
         return include_domains
 
     def get_include_records(self):
-        include_domains = self.get_include_domains()
-        include_records = {}
-        for domain in include_domains:
-            try:
-                include_records[domain] = SpfRecord.from_domain(domain)
-            except dns.resolver.NXDOMAIN:
-                include_records[domain] = None
-        return include_records
+        if self.recursion_depth >= 10:
+            return {}
+        else:
+            include_domains = self.get_include_domains()
+            include_records = {}
+            for domain in include_domains:
+                try:
+                    include_records[domain] = SpfRecord.from_domain(domain)
+                    include_records[domain].recursion_depth = self.recursion_depth + 1
+                except dns.resolver.NXDOMAIN:
+                    include_records[domain] = None
+            return include_records
 
     def _is_all_mechanism_strong(self):
         strong_spf_all_string = True
