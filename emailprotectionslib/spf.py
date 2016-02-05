@@ -86,14 +86,10 @@ class SpfRecord(object):
             return False
 
     def _are_include_mechanisms_strong(self):
-        include_domain_list = self.get_include_domains()
-
-        for include_domain in include_domain_list:
-            strong_all_string = SpfRecord.from_domain(include_domain).is_record_strong()
-
-            if strong_all_string:
+        include_records = self.get_include_records()
+        for record in include_records:
+            if include_records[record] is not None and include_records[record].is_record_strong():
                 return True
-
         return False
 
     def is_record_strong(self):
