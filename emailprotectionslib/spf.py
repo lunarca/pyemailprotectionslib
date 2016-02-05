@@ -1,5 +1,6 @@
 import re
 import dns.resolver
+import logging
 
 
 class SpfRecord(object):
@@ -21,11 +22,14 @@ class SpfRecord(object):
         if self.recursion_depth >= 10:
             return None
         else:
-            redirect_domain = self.get_redirect_domain()
-            if redirect_domain is not None:
-                redirect_record = SpfRecord.from_domain(redirect_domain)
-                redirect_record.recursion_depth = self.recursion_depth + 1
-                return redirect_record
+            try:
+                redirect_domain = self.get_redirect_domain()
+                if redirect_domain is not None:
+                    redirect_record = SpfRecord.from_domain(redirect_domain)
+                    redirect_record.recursion_depth = self.recursion_depth + 1
+                    return redirect_record
+            except RuntimeError as e:
+                logging.exception("Encountered stack overflow processing domain %(d)s" % {'d': redirect_domain})
 
     def get_redirect_domain(self):
         redirect_domain = None
@@ -55,6 +59,8 @@ class SpfRecord(object):
                     include_records[domain].recursion_depth = self.recursion_depth + 1
                 except dns.resolver.NXDOMAIN:
                     include_records[domain] = None
+                except RuntimeError as e:
+                    logging.exception("Encountered recursion overflow processing domain %(d)s" % {'d': domain})
             return include_records
 
     def _is_all_mechanism_strong(self):
