@@ -10,6 +10,7 @@ class SpfRecord(object):
         self.record = None
         self.mechanisms = None
         self.all_string = None
+        self.domain = None
         self.recursion_depth = 0
 
     def __str__(self):
@@ -105,9 +106,10 @@ class SpfRecord(object):
         return strong_spf_record
 
     @staticmethod
-    def from_spf_string(spf_string):
+    def from_spf_string(spf_string, domain):
         if spf_string is not None:
             spf_record = SpfRecord()
+            spf_record.domain = domain
             spf_record.record = spf_string
             spf_record.mechanisms = _extract_mechanisms(spf_string)
             spf_record.version = _extract_version(spf_string)
@@ -120,7 +122,7 @@ class SpfRecord(object):
     def from_domain(domain):
         spf_string = get_spf_string_for_domain(domain)
         if spf_string is not None:
-            return SpfRecord.from_spf_string(spf_string)
+            return SpfRecord.from_spf_string(spf_string, domain)
         else:
             return None
 

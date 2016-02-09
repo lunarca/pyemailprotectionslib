@@ -1,11 +1,13 @@
 import re
 import logging
 import Resolver
+import tldextract
 
 
 class DmarcRecord(object):
 
     def __init__(self):
+        self.domain = None
         self.version = None
         self.policy = None
         self.pct = None
@@ -51,13 +53,34 @@ class DmarcRecord(object):
         if self.policy is not None and (self.policy == "reject" or self.policy == "quarantine"):
             record_strong = True
 
+        if not record_strong:
+            try:
+                record_strong = self.is_org_domain_strong()
+            except OrgDomainException:
+                record_strong = False
+
         return record_strong
 
+    def is_org_domain_strong(self):
+        org_domain = self.get_org_domain()
+        if org_domain == self.domain:
+            raise OrgDomainException
+        else:
+            return DmarcRecord.from_domain(org_domain).is_record_strong()
+
+    def get_org_domain(self):
+        try:
+            domain_parts = tldextract.extract(self.domain)
+            return "%(domain)s.%(tld)s" % {'domain': domain_parts.domain, 'tld': domain_parts.suffix}
+        except TypeError:
+            return None
+
     @staticmethod
-    def from_dmarc_string(dmarc_string):
+    def from_dmarc_string(dmarc_string, domain):
         if dmarc_string is not None:
             dmarc_record = DmarcRecord()
             dmarc_record.record = dmarc_string
+            dmarc_record.domain = domain
             dmarc_record.process_tags(dmarc_string)
             return dmarc_record
         else:
@@ -67,7 +90,7 @@ class DmarcRecord(object):
     def from_domain(domain):
         dmarc_string = get_dmarc_string_for_domain(domain)
         if dmarc_string is not None:
-            return DmarcRecord.from_dmarc_string(dmarc_string)
+            return DmarcRecord.from_dmarc_string(dmarc_string, domain)
         else:
             return None
 
@@ -102,3 +125,6 @@ def get_dmarc_string_for_domain(domain):
     except TypeError as error:
         logging.exception(error)
         return None
+
+class OrgDomainException(Exception):
+    pass

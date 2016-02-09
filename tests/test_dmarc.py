@@ -42,8 +42,9 @@ def test_from_dmarc_record_pass():
     dmarc_record = dmarclib.DmarcRecord()
     dmarc_record.version = "DMARC1"
     dmarc_record.policy = "quarantine"
+    dmarc_record.domain = "google.com"
     dmarc_record.record = dmarc_string
-    assert dmarclib.DmarcRecord.from_dmarc_string(dmarc_string) == dmarc_record
+    assert dmarclib.DmarcRecord.from_dmarc_string(dmarc_string, "google.com") == dmarc_record
 
 
 def test_from_domain_pass():
@@ -53,14 +54,14 @@ def test_from_domain_pass():
 def test_record_strength_quarantine():
     dmarc_string = ("v=DMARC1; p=quarantine; rua=mailto:"
                           "mailauth-reports@google.com")
-    record = dmarclib.DmarcRecord.from_dmarc_string(dmarc_string)
+    record = dmarclib.DmarcRecord.from_dmarc_string(dmarc_string, "google.com")
 
     assert record.is_record_strong() is True
 
 def test_record_strength_none():
     dmarc_string = ("v=DMARC1; p=none; rua=mailto:"
                           "mailauth-reports@google.com")
-    record = dmarclib.DmarcRecord.from_dmarc_string(dmarc_string)
+    record = dmarclib.DmarcRecord.from_dmarc_string(dmarc_string ,"google.com")
 
     assert record.is_record_strong() is False
 
@@ -68,7 +69,7 @@ def test_record_strength_none():
 def test_record_strength_reject():
     dmarc_string = ("v=DMARC1; p=reject; rua=mailto:"
                           "mailauth-reports@google.com")
-    record = dmarclib.DmarcRecord.from_dmarc_string(dmarc_string)
+    record = dmarclib.DmarcRecord.from_dmarc_string(dmarc_string, "google.com")
 
     assert record.is_record_strong() is True
 
@@ -76,6 +77,6 @@ def test_record_strength_reject():
 def test_record_strength_no_policy():
     dmarc_string = ("v=DMARC1; rua=mailto:"
                           "mailauth-reports@google.com")
-    record = dmarclib.DmarcRecord.from_dmarc_string(dmarc_string)
+    record = dmarclib.DmarcRecord.from_dmarc_string(dmarc_string, "google.com")
 
     assert record.is_record_strong() is False
