@@ -6,8 +6,8 @@ import tldextract
 
 class DmarcRecord(object):
 
-    def __init__(self):
-        self.domain = None
+    def __init__(self, domain):
+        self.domain = domain
         self.version = None
         self.policy = None
         self.pct = None
@@ -66,7 +66,12 @@ class DmarcRecord(object):
         if org_domain == self.domain:
             raise OrgDomainException
         else:
-            return DmarcRecord.from_domain(org_domain).is_record_strong()
+            org_record = DmarcRecord.from_domain(org_domain)
+            if org_record is not None:
+                if org_record.subdomain_policy is not None:
+                    return org_record.subdomain_policy == "reject" or org_record.subdomain_policy == "quarantine"
+                else:
+                    return org_record.is_record_strong()
 
     def get_org_domain(self):
         try:
@@ -78,13 +83,12 @@ class DmarcRecord(object):
     @staticmethod
     def from_dmarc_string(dmarc_string, domain):
         if dmarc_string is not None:
-            dmarc_record = DmarcRecord()
+            dmarc_record = DmarcRecord(domain)
             dmarc_record.record = dmarc_string
-            dmarc_record.domain = domain
             dmarc_record.process_tags(dmarc_string)
             return dmarc_record
         else:
-            return None
+            return DmarcRecord(domain)
 
     @staticmethod
     def from_domain(domain):
@@ -92,7 +96,7 @@ class DmarcRecord(object):
         if dmarc_string is not None:
             return DmarcRecord.from_dmarc_string(dmarc_string, domain)
         else:
-            return None
+            return DmarcRecord(domain)
 
 
 def _extract_tags(dmarc_record):
@@ -125,6 +129,7 @@ def get_dmarc_string_for_domain(domain):
     except TypeError as error:
         logging.exception(error)
         return None
+
 
 class OrgDomainException(Exception):
     pass

@@ -5,12 +5,12 @@ import Resolver
 
 class SpfRecord(object):
 
-    def __init__(self):
+    def __init__(self, domain):
         self.version = None
         self.record = None
         self.mechanisms = None
         self.all_string = None
-        self.domain = None
+        self.domain = domain
         self.recursion_depth = 0
 
     def __str__(self):
@@ -21,7 +21,7 @@ class SpfRecord(object):
 
     def get_redirected_record(self):
         if self.recursion_depth >= 10:
-            return None
+            return SpfRecord(self.get_redirect_domain())
         else:
             redirect_domain = self.get_redirect_domain()
             if redirect_domain is not None:
@@ -108,15 +108,14 @@ class SpfRecord(object):
     @staticmethod
     def from_spf_string(spf_string, domain):
         if spf_string is not None:
-            spf_record = SpfRecord()
-            spf_record.domain = domain
+            spf_record = SpfRecord(domain)
             spf_record.record = spf_string
             spf_record.mechanisms = _extract_mechanisms(spf_string)
             spf_record.version = _extract_version(spf_string)
             spf_record.all_string = _extract_all_mechanism(spf_record.mechanisms)
             return spf_record
         else:
-            return None
+            return SpfRecord(domain)
 
     @staticmethod
     def from_domain(domain):
@@ -124,7 +123,7 @@ class SpfRecord(object):
         if spf_string is not None:
             return SpfRecord.from_spf_string(spf_string, domain)
         else:
-            return None
+            return SpfRecord(domain)
 
 
 def _extract_version(spf_string):

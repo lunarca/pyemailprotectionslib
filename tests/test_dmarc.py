@@ -39,7 +39,7 @@ def test_extract_tags_pass():
 
 def test_from_dmarc_record_pass():
     dmarc_string = "v=DMARC1; p=quarantine"
-    dmarc_record = dmarclib.DmarcRecord()
+    dmarc_record = dmarclib.DmarcRecord("google.com")
     dmarc_record.version = "DMARC1"
     dmarc_record.policy = "quarantine"
     dmarc_record.domain = "google.com"
@@ -57,6 +57,7 @@ def test_record_strength_quarantine():
     record = dmarclib.DmarcRecord.from_dmarc_string(dmarc_string, "google.com")
 
     assert record.is_record_strong() is True
+
 
 def test_record_strength_none():
     dmarc_string = ("v=DMARC1; p=none; rua=mailto:"

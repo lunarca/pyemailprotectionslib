@@ -43,7 +43,7 @@ def test_extract_mechanisms():
 
 def test_from_spf_string():
     spf_string = "v=spf1 include:_spf.google.com mx ~all"
-    spf_record = spflib.SpfRecord()
+    spf_record = spflib.SpfRecord("google.com")
     spf_record.all_string = "~all"
     spf_record.version = "spf1"
     spf_record.domain = "google.com"
