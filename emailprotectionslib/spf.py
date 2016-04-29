@@ -176,5 +176,5 @@ def get_spf_string_for_domain(domain):
         txt_records = Resolver.resolver().query(domain, query_type="TXT")
         return _find_record_from_answers(txt_records)
     except IOError as e:
-        logging.exception(e)
+        # This is returned usually as a NXDOMAIN, which is expected.
         return None

@@ -61,17 +61,24 @@ class DmarcRecord(object):
 
         return record_strong
 
+    def is_subdomain_policy_strong(self):
+        if self.subdomain_policy is not None:
+            return self.subdomain_policy == "reject" or self.subdomain_policy == "quarantine"
+
     def is_org_domain_strong(self):
+        org_record = self.get_org_record()
+        subdomain_policy_strong = org_record.is_subdomain_policy_strong()
+        if subdomain_policy_strong is not None:
+            return subdomain_policy_strong
+        else:
+            return org_record.is_record_strong()
+
+    def get_org_record(self):
         org_domain = self.get_org_domain()
         if org_domain == self.domain:
             raise OrgDomainException
         else:
-            org_record = DmarcRecord.from_domain(org_domain)
-            if org_record is not None:
-                if org_record.subdomain_policy is not None:
-                    return org_record.subdomain_policy == "reject" or org_record.subdomain_policy == "quarantine"
-                else:
-                    return org_record.is_record_strong()
+            return DmarcRecord.from_domain(org_domain)
 
     def get_org_domain(self):
         try:
@@ -123,8 +130,8 @@ def get_dmarc_string_for_domain(domain):
     try:
         txt_records = Resolver.resolver().query("_dmarc." + domain, query_type="TXT")
         return _find_record_from_answers(txt_records)
-    except IOError as ex:
-        logging.exception(ex)
+    except IOError:
+        # This is returned usually as a NXDOMAIN, which is expected.
         return None
     except TypeError as error:
         logging.exception(error)
