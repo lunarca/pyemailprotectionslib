@@ -111,9 +111,17 @@ def _extract_tags(dmarc_record):
     return re.findall(dmarc_pattern, dmarc_record)
 
 
+def _merge_txt_record_strings(txt_record):
+    # DMARC spec requires that TXT records containing multiple strings be cat'd together.
+    string_pattern = re.compile('"([^"]*)"')
+    txt_record_strings = string_pattern.findall(txt_record)
+    return "".join(txt_record_strings)
+
+
 def _match_dmarc_record(txt_record):
-    dmarc_pattern = re.compile('^"?(v=DMARC[^"]*)"?')
-    potential_dmarc_match = dmarc_pattern.match(str(txt_record))
+    merged_txt_record = _merge_txt_record_strings(txt_record)
+    dmarc_pattern = re.compile('^(v=DMARC.*)')
+    potential_dmarc_match = dmarc_pattern.match(str(merged_txt_record))
     return potential_dmarc_match
 
 

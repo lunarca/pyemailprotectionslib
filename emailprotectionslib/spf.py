@@ -156,9 +156,17 @@ def _extract_mechanisms(spf_string):
     return spf_mechanisms
 
 
+def _merge_txt_record_strings(txt_record):
+    # SPF spec requires that TXT records containing multiple strings be cat'd together.
+    string_pattern = re.compile('"([^"]*)"')
+    txt_record_strings = string_pattern.findall(txt_record)
+    return "".join(txt_record_strings)
+
+
 def _match_spf_record(txt_record):
-    spf_pattern = re.compile('^"?(v=spf[^"]*)"?')
-    potential_spf_match = spf_pattern.match(str(txt_record))
+    clean_txt_record = _merge_txt_record_strings(txt_record)
+    spf_pattern = re.compile('^(v=spf.*)')
+    potential_spf_match = spf_pattern.match(str(clean_txt_record))
     return potential_spf_match
 
 
