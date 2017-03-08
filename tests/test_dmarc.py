@@ -2,13 +2,13 @@ import emailprotectionslib.dmarc as dmarclib
 
 
 def test_find_record_from_answers_valid():
-    dmarc_string = ("v=DMARC1; p=quarantine; rua=mailto:"
-                    "mailauth-reports@google.com")
+    dmarc_string = '"v=DMARC1; p=reject; rua=mailto:mailauth-reports@google.com"'
+    dmarc_string_without_quotes = 'v=DMARC1; p=reject; rua=mailto:mailauth-reports@google.com'
     txt_records = [("google.com", "txt", dmarc_string),
                    ("google.com", "txt", "asdf"),
                    ("google.com", "txt", "not dmarc")]
 
-    assert dmarclib._find_record_from_answers(txt_records) == dmarc_string
+    assert dmarclib._find_record_from_answers(txt_records) == dmarc_string_without_quotes
 
 
 def test_find_record_from_answers_invalid():
@@ -18,14 +18,15 @@ def test_find_record_from_answers_invalid():
 
 
 def test_match_dmarc_record():
-    valid_dmarc_string = ("v=DMARC1; p=quarantine; rua=mailto:"
-                          "mailauth-reports@google.com")
+    valid_dmarc_string = ('"v=DMARC1; p=quarantine; rua=mailto:'
+                          'mailauth-reports@google.com"')
+
     assert dmarclib._match_dmarc_record(valid_dmarc_string) is not None
 
 
 def test_match_dmarc_record_invalid():
-    invalid_dmarc = ("vMARC1; p=quarantine; rua=mailto:"
-                     "mailauth-reports@google.com")
+    invalid_dmarc = ('"vMARC1; p=quarantine; rua=mailto:'
+                     'mailauth-reports@google.com"')
     assert dmarclib._match_dmarc_record(invalid_dmarc) is None
 
 
