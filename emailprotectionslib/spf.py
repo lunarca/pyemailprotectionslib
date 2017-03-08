@@ -31,19 +31,23 @@ class SpfRecord(object):
 
     def get_redirect_domain(self):
         redirect_domain = None
-        for mechanism in self.mechanisms:
-            redirect_mechanism = re.match('redirect=(.*)', mechanism)
-            if redirect_mechanism is not None:
-                redirect_domain = redirect_mechanism.group(1)
-        return redirect_domain
+        if self.mechanisms is not None:
+            for mechanism in self.mechanisms:
+                redirect_mechanism = re.match('redirect=(.*)', mechanism)
+                if redirect_mechanism is not None:
+                    redirect_domain = redirect_mechanism.group(1)
+            return redirect_domain
 
     def get_include_domains(self):
         include_domains = []
-        for mechanism in self.mechanisms:
-            include_mechanism = re.match('include:(.*)', mechanism)
-            if include_mechanism is not None:
-                include_domains.append(include_mechanism.group(1))
-        return include_domains
+        if self.mechanisms is not None:
+            for mechanism in self.mechanisms:
+                include_mechanism = re.match('include:(.*)', mechanism)
+                if include_mechanism is not None:
+                    include_domains.append(include_mechanism.group(1))
+            return include_domains
+        else:
+            return []
 
     def get_include_records(self):
         if self.recursion_depth >= 10:
