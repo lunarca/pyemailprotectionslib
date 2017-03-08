@@ -83,5 +83,15 @@ def test_is_all_mechanism_strong_fail():
     spf_string = "v=spf1 include:_spf.google.com mx"
     spf_record = spflib.SpfRecord.from_spf_string(spf_string, "google.com")
     assert spf_record._is_all_mechanism_strong() is False
-    
 
+
+def test_no_mechanisms_include_domains():
+    spf_string = "v=spf1"
+    spf_record = spflib.SpfRecord.from_spf_string(spf_string, "google.com")
+    assert spf_record.get_include_domains() == []
+
+
+def test_no_mechanisms_redirect_domains():
+    spf_string = "v=spf1"
+    spf_record = spflib.SpfRecord.from_spf_string(spf_string, "google.com")
+    assert spf_record.get_redirect_domain() is None
