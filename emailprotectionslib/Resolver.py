@@ -1,10 +1,13 @@
+from builtins import str
+from builtins import object
+
 import dnslib
 import sys
 
 #A resolver wrapper around dnslib.py
 # stolen wholesale from https://github.com/TheRook/subbrute
 # thanks Rook
-class resolver:
+class resolver(object):
     #Google's DNS servers are only used if zero resolvers are specified by the user.
     pos = 0
     rcode = ""
