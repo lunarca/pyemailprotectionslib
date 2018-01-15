@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name="emailprotectionslib",
     packages=["emailprotectionslib"],
-    version="0.8.3",
+    version="0.8.4",
     description="Python library to interact with SPF and DMARC",
     author="Alex DeFreese",
     author_email="alexdefreese@gmail.com",
@@ -16,6 +16,7 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
     ]
 )
