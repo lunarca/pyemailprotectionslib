@@ -8,7 +8,7 @@ setup(
     author="Alex DeFreese",
     author_email="alexdefreese@gmail.com",
     url="https://github.com/lunarca/pyemailprotectionslib",
-    requires=['dnslib', 'tldextract'],
+    requires=['dnslib', 'tldextract', 'future'],
     classifiers=[
         "Development Status :: 1 - Planning",
         "Environment :: Plugins",
